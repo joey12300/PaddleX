@@ -100,6 +100,7 @@ class Model {
                         bool use_trt = false,
                         int gpu_id = 0,
                         std::string key = "",
+                        std::string key_id = "",
                         bool use_ir_optim = true);
 
   /*

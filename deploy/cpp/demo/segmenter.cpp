@@ -40,6 +40,8 @@ DEFINE_int32(thread_num,
              omp_get_num_procs(),
              "Number of preprocessing threads");
 DEFINE_bool(use_ir_optim, false, "use ir optimization");
+DEFINE_string(key_id, "",
+              "the key id to get the key of encrypted model from server");
 
 int main(int argc, char** argv) {
   // 解析命令行参数
@@ -61,6 +63,7 @@ int main(int argc, char** argv) {
              FLAGS_use_trt,
              FLAGS_gpu_id,
              FLAGS_key,
+             FLAGS_key_id,
              FLAGS_use_ir_optim);
   int imgs = 1;
   // 进行预测
