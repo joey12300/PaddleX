@@ -24,6 +24,8 @@
 #include "yaml-cpp/yaml.h"
 
 #ifdef _WIN32
+#include <windows.h>
+#include <tchar.h>
 #define OS_PATH_SEP "\\"
 #else
 #define OS_PATH_SEP "/"
@@ -40,6 +42,13 @@
 #include "model_code.h"  // NOLINT
 #endif
 
+#ifdef WITH_ENCRYPTION_SERVER
+#ifndef USE_REINFORCED
+#include "aipe_sec_client.h"  // NOLINT
+#include "aipe_sec_client_paddle.h"  // NOLINT
+#include "aipe_sec_client_paddle_external.h"  // NOLINT
+#endif
+#endif
 namespace PaddleX {
 
 /*
@@ -72,6 +81,7 @@ class Model {
    * @param use_trt: use Tensor RT or not when infering
    * @param gpu_id: the id of gpu when infering with using gpu
    * @param key: the key of encryption when using encrypted model
+   * @param key_id: the key id to get the key of encrypted model from server
    * @param use_ir_optim: use ir optimization when infering
    * */
   void Init(const std::string& model_dir,
@@ -79,8 +89,10 @@ class Model {
             bool use_trt = false,
             int gpu_id = 0,
             std::string key = "",
+            std::string key_id = "",
             bool use_ir_optim = true) {
-    create_predictor(model_dir, use_gpu, use_trt, gpu_id, key, use_ir_optim);
+    create_predictor(model_dir, use_gpu, use_trt, gpu_id, key, key_id,
+                     use_ir_optim);
   }
 
   void create_predictor(const std::string& model_dir,

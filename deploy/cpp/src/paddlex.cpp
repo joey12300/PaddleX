@@ -23,13 +23,45 @@ void Model::create_predictor(const std::string& model_dir,
                              bool use_trt,
                              int gpu_id,
                              std::string key,
+                             std::string key_id,
                              bool use_ir_optim) {
   paddle::AnalysisConfig config;
   std::string model_file = model_dir + OS_PATH_SEP + "__model__";
   std::string params_file = model_dir + OS_PATH_SEP + "__params__";
   std::string yaml_file = model_dir + OS_PATH_SEP + "model.yml";
   std::string yaml_input = "";
-#ifdef WITH_ENCRYPTION
+
+#if defined(WITH_ENCRYPTION_SERVER) || defined(USE_REINFORCED)
+#ifdef _WIN32
+  if (key_id != "") {
+    model_file = model_dir + OS_PATH_SEP + "__model__.encrypted";
+    params_file = model_dir + OS_PATH_SEP + "__params__.encrypted";
+    yaml_file = model_dir + OS_PATH_SEP + "model.yml.encrypted";
+#ifdef USE_REINFORCED
+    HINSTANCE handle_dll = LoadLibrary(
+        _T("./aipe_sec_client_paddle_reinforce.dll"));
+    check_product_auth_fuc check_product_auth =
+      (check_product_auth_fuc)GetProcAddress(handle_dll, "check_product_auth");
+    paddle_aipe_sec_security_load_model_fuc
+      paddle_aipe_sec_security_load_model =
+        (paddle_aipe_sec_security_load_model_fuc)GetProcAddress(
+        handle_dll, "paddle_aipe_sec_security_load_model");
+    paddle_aipe_sec_decrypt_file_fuc paddle_aipe_sec_decrypt_file =
+        (paddle_aipe_sec_decrypt_file_fuc)GetProcAddress(
+        handle_dll, "paddle_aipe_sec_decrypt_file");
+#endif
+    int result_auth = check_product_auth("CATL");
+    std::cout << "result_auth: " << result_auth << std::endl;
+    paddle_aipe_sec_security_load_model(&config,
+                                        const_cast<char *>(key_id.c_str()), 3,
+                                        model_file.c_str(),
+                                        params_file.c_str());
+    yaml_input = paddle_aipe_sec_decrypt_file(yaml_file.c_str(),
+        const_cast<char*> (key.c_str()), 3);
+  }
+#endif
+
+#elif defined(WITH_ENCRYPTION)
   if (key != "") {
     model_file = model_dir + OS_PATH_SEP + "__model__.encrypted";
     params_file = model_dir + OS_PATH_SEP + "__params__.encrypted";
