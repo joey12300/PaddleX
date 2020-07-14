@@ -2,7 +2,7 @@
 
 ## 介绍
 
-PaddleX目前提供了MaskRCNN实例分割模型结构,多种backbone模型，可满足开发者不同场景和性能的需求。
+PaddleX目前提供了MaskRCNN实例分割模型结构，多种backbone模型，可满足开发者不同场景和性能的需求。
 
 - **Box MMAP/Seg MMAP**: 模型在COCO数据集上的测试精度
 - **预测速度**：单张图片的预测用时（不包括预处理和后处理)
@@ -10,18 +10,18 @@ PaddleX目前提供了MaskRCNN实例分割模型结构,多种backbone模型，�
 
 | 模型(点击获取代码)               | Box MMAP/Seg MMAP | 模型大小 | GPU预测速度 | Arm预测速度 | 备注 |
 | :----------------  | :------- | :------- | :---------  | :---------  | :-----    |
-| [MaskRCNN-ResNet50-FPN](https://github.com/PaddlePaddle/PaddleX/blob/develop/tutorials/train/instance_segmentation/mask_rcnn_r50_fpn.py)   |  38.7%/34.7%   |   170.0MB    |  160.185ms       |   -    | 模型精度高，适用于服务端部署   |
-| [MaskRCNN-ResNet18-FPN](https://github.com/PaddlePaddle/PaddleX/blob/develop/tutorials/train/instance_segmentation/mask_rcnn_r18_fpn.py)   |  -/-   |   120.0MB    |  -       |   -    | 模型精度高，适用于服务端部署   |
-| [MaskRCNN-HRNet-FPN](https://github.com/PaddlePaddle/PaddleX/blob/develop/tutorials/train/instance_segmentation/mask_rcnn_hrnet_fpn.py)   |  38.7%/34.7%   |   116.MB    |  -       |   -    | 模型精度高，预测速度快，适用于服务端部署   |
+| [MaskRCNN-ResNet50-FPN](https://github.com/PaddlePaddle/PaddleX/blob/develop/tutorials/train/instance_segmentation/mask_rcnn_r50_fpn.py)   |  38.7%/34.7%   |   177.7MB    |  160.185ms       |   -    | 模型精度高，适用于服务端部署   |
+| [MaskRCNN-ResNet18-FPN](https://github.com/PaddlePaddle/PaddleX/blob/develop/tutorials/train/instance_segmentation/mask_rcnn_r18_fpn.py)   |  33.6/30.5   |   189.1MB    |  -       |   -    | 模型精度高，适用于服务端部署   |
+| [MaskRCNN-HRNet-FPN](https://github.com/PaddlePaddle/PaddleX/blob/develop/tutorials/train/instance_segmentation/mask_rcnn_hrnet_fpn.py)   |  38.7%/34.7%   |   120.7MB    |  -       |   -    | 模型精度高，预测速度快，适用于服务端部署   |
 
 
 ## 开始训练
 
-> 代码保存到本地后，即可直接训练，**训练代码会自动下载训练数据开始训练**
-> > 如保存为`mask_r50_fpn.py`，如下命令即可开始训练
-> > ```
-> > python mask_r50_fpn.py
-> > ```
+将代码保存到本地后运行（代码下载链接位于上面表格中），**代码会自动下载训练数据并开始训练**。如保存为`mask_rcnn_r50_fpn.py`，执行如下命令即可开始训练：
+
+```
+python mask_rcnn_r50_fpn.py
+```
 
 ## 相关文档
 
