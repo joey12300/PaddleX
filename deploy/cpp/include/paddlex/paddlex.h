@@ -43,11 +43,9 @@
 #endif
 
 #ifdef WITH_ENCRYPTION_SERVER
-#ifndef USE_REINFORCED
 #include "aipe_sec_client.h"  // NOLINT
 #include "aipe_sec_client_paddle.h"  // NOLINT
 #include "aipe_sec_client_paddle_external.h"  // NOLINT
-#endif
 #endif
 namespace PaddleX {
 
