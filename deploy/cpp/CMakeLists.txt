@@ -6,6 +6,8 @@ option(WITH_GPU        "Compile demo with GPU/CPU, default use CPU."            
 option(WITH_STATIC_LIB "Compile demo with static/shared library, default use static."   OFF)
 option(WITH_TENSORRT "Compile demo with TensorRT."   OFF)
 option(WITH_ENCRYPTION "Compile demo with encryption tool."   OFF)
+option(WITH_ENCRYPTION_SERVER "Compile demo with encryption server tool."   OFF)
+option(USE_REINFORCED "Run demo with reinforced dll."   OFF)
 
 SET(TENSORRT_DIR "" CACHE PATH "Location of libraries")
 SET(PADDLE_DIR "" CACHE PATH "Location of libraries")
@@ -44,10 +46,9 @@ macro(safe_set_static_flag)
     endforeach(flag_var)
 endmacro()
 
-
-if (WITH_ENCRYPTION)
 add_definitions( -DWITH_ENCRYPTION=${WITH_ENCRYPTION})
-endif()
+add_definitions( -DWITH_ENCRYPTION_SERVER=${WITH_ENCRYPTION_SERVER})
+add_definitions( -DUSE_REINFORCED=${USE_REINFORCED})
 
 if (WITH_MKL)
     ADD_DEFINITIONS(-DUSE_MKL)
@@ -265,6 +266,13 @@ if(WITH_ENCRYPTION)
   endif()
 endif()
 
+if(WITH_ENCRYPTION_SERVER)
+  if(WIN32)
+      set(DEPS ${DEPS} ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle${CMAKE_STATIC_LIBRARY_SUFFIX})
+      set(DEPS ${DEPS} ${ENCRYPTION_DIR}/lib/aipe_sec_client${CMAKE_STATIC_LIBRARY_SUFFIX})
+  endif()
+endif()
+
 if (NOT WIN32)
     set(EXTERNAL_LIB "-ldl -lrt -lgomp -lz -lm -lpthread")
     set(DEPS ${DEPS} ${EXTERNAL_LIB})
@@ -287,7 +295,8 @@ add_executable(segmenter demo/segmenter.cpp src/transforms.cpp src/paddlex.cpp s
 ADD_DEPENDENCIES(segmenter ext-yaml-cpp)
 target_link_libraries(segmenter ${DEPS})
 
-if (WIN32 AND WITH_MKL)
+if (WIN32)
+  if(WITH_MKL)
     add_custom_command(TARGET classifier POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/mklml.dll ./mklml.dll
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/libiomp5md.dll ./libiomp5md.dll
@@ -311,21 +320,65 @@ if (WIN32 AND WITH_MKL)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mklml/lib/libiomp5md.dll ./release/libiomp5md.dll
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/third_party/install/mkldnn/lib/mkldnn.dll ./release/mkldnn.dll
     )
-    # for encryption
-    if (EXISTS "${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll")
-        add_custom_command(TARGET classifier POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./pmodel-decrypt.dll
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./release/pmodel-decrypt.dll
-        )
-        add_custom_command(TARGET detector POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./pmodel-decrypt.dll
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./release/pmodel-decrypt.dll
-        )
-        add_custom_command(TARGET segmenter POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./pmodel-decrypt.dll
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./release/pmodel-decrypt.dll
-        )
-    endif()
+  endif()
+  # for encryption
+  if (EXISTS "${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll")
+      add_custom_command(TARGET classifier POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./pmodel-decrypt.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./release/pmodel-decrypt.dll
+      )
+      add_custom_command(TARGET detector POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./pmodel-decrypt.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./release/pmodel-decrypt.dll
+      )
+      add_custom_command(TARGET segmenter POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./pmodel-decrypt.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/pmodel-decrypt.dll ./release/pmodel-decrypt.dll
+      )
+  endif()
+  if (EXISTS "${ENCRYPTION_DIR}/lib/aipe_sec_client.dll")
+      add_custom_command(TARGET classifier POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client.dll ./aipe_sec_client.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client.dll ./release/aipe_sec_client.dll
+      )
+      add_custom_command(TARGET detector POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client.dll ./aipe_sec_client.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client.dll ./release/aipe_sec_client.dll
+      )
+      add_custom_command(TARGET segmenter POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client.dll ./aipe_sec_client.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client.dll ./release/aipe_sec_client.dll
+      )
+  endif()
+  if (EXISTS "${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle.dll")
+      add_custom_command(TARGET classifier POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle.dll ./aipe_sec_client_paddle.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle.dll ./release/aipe_sec_client_paddle.dll
+      )
+      add_custom_command(TARGET detector POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle.dll ./aipe_sec_client_paddle.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle.dll ./release/aipe_sec_client_paddle.dll
+      )
+      add_custom_command(TARGET segmenter POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle.dll ./aipe_sec_client_paddle.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle.dll ./release/aipe_sec_client_paddle.dll
+      )
+  endif()
+  if (EXISTS "${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle_reinforce.dll")
+      add_custom_command(TARGET classifier POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle_reinforce.dll ./aipe_sec_client_paddle_reinforce.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle_reinforce.dll ./release/aipe_sec_client_paddle_reinforce.dll
+      )
+      add_custom_command(TARGET detector POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle_reinforce.dll ./aipe_sec_client_paddle_reinforce.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle_reinforce.dll ./release/aipe_sec_client_paddle_reinforce.dll
+      )
+      add_custom_command(TARGET segmenter POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle_reinforce.dll ./aipe_sec_client_paddle_reinforce.dll
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ENCRYPTION_DIR}/lib/aipe_sec_client_paddle_reinforce.dll ./release/aipe_sec_client_paddle_reinforce.dll
+      )
+  endif()
+
 endif()
 
 file(COPY  "${CMAKE_SOURCE_DIR}/include/paddlex/visualize.h"
