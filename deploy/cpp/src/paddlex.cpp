@@ -40,6 +40,10 @@ void Model::create_predictor(const std::string& model_dir,
 #ifdef USE_REINFORCED
     HINSTANCE handle_dll = LoadLibrary(
         _T("./aipe_sec_client_paddle_reinforce.dll"));
+    if (handle_dll == NULL) {
+      std::cout << "Get dll error" << std::endl;
+      return;
+    }
     check_product_auth_fuc check_product_auth =
       (check_product_auth_fuc)GetProcAddress(handle_dll, "check_product_auth");
     paddle_aipe_sec_security_load_model_fuc
@@ -57,7 +61,7 @@ void Model::create_predictor(const std::string& model_dir,
                                         model_file.c_str(),
                                         params_file.c_str());
     yaml_input = paddle_aipe_sec_decrypt_file(yaml_file.c_str(),
-        const_cast<char*> (key.c_str()), 3);
+        const_cast<char*> (key_id.c_str()), 3);
   }
 #endif
 
@@ -86,7 +90,7 @@ void Model::create_predictor(const std::string& model_dir,
     exit(-1);
   }
 
-  if (key == "") {
+  if (key == "" && key_id == "") {
     config.SetModel(model_file, params_file);
   }
   if (use_gpu) {
