@@ -47,6 +47,16 @@
                     "type": "BOOL"
                 },
                 {
+                    "name": "WITH_ENCRYPTION_SERVER",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
+                    "name": "USE_REINFORCED",
+                    "value": "False",
+                    "type": "BOOL"
+                },
+                {
                     "name": "ENCRYPTION_DIR",
                     "value": "",
                     "type": "PATH"
