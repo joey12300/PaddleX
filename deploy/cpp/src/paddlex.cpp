@@ -30,6 +30,7 @@ void Model::create_predictor(const std::string& model_dir,
   std::string params_file = model_dir + OS_PATH_SEP + "__params__";
   std::string yaml_file = model_dir + OS_PATH_SEP + "model.yml";
   std::string yaml_input = "";
+  bool decrypted = false;
 
 #if defined(WITH_ENCRYPTION_SERVER) || defined(USE_REINFORCED)
 #ifdef _WIN32
@@ -62,11 +63,13 @@ void Model::create_predictor(const std::string& model_dir,
                                         params_file.c_str());
     yaml_input = paddle_aipe_sec_decrypt_file(yaml_file.c_str(),
         const_cast<char*> (key_id.c_str()), 3);
+    decrypted = true;
   }
 #endif
+#endif
 
-#elif defined(WITH_ENCRYPTION)
-  if (key != "") {
+#if defined(WITH_ENCRYPTION)
+  if (key != "" && !decrypted) {
     model_file = model_dir + OS_PATH_SEP + "__model__.encrypted";
     params_file = model_dir + OS_PATH_SEP + "__params__.encrypted";
     yaml_file = model_dir + OS_PATH_SEP + "model.yml.encrypted";
