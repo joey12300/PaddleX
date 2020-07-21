@@ -61,8 +61,10 @@ void Model::create_predictor(const std::string& model_dir,
                                         const_cast<char *>(key_id.c_str()), 3,
                                         model_file.c_str(),
                                         params_file.c_str());
+    int decrypt_code;
     yaml_input = paddle_aipe_sec_decrypt_file(yaml_file.c_str(),
-        const_cast<char*> (key_id.c_str()), 3);
+        const_cast<char*> (key_id.c_str()), 3, &decrypt_code);
+    std::cout << "aipe sec decrypt_code: " << decrypt_code << std::endl;
     decrypted = true;
   }
 #endif
@@ -75,7 +77,11 @@ void Model::create_predictor(const std::string& model_dir,
     yaml_file = model_dir + OS_PATH_SEP + "model.yml.encrypted";
     paddle_security_load_model(
         &config, key.c_str(), model_file.c_str(), params_file.c_str());
-    yaml_input = decrypt_file(yaml_file.c_str(), key.c_str());
+    // yaml_input = decrypt_file(yaml_file.c_str(), key.c_str());
+    int decrypt_code;
+    yaml_input = decrypt_file_with_code(yaml_file.c_str(), key.c_str(),
+                                        &decrypt_code);
+    std::cout << "decrypt_code: " << decrypt_code << std::endl;
   }
 #endif
   if (yaml_input == "") {
