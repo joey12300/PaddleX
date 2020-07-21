@@ -84,6 +84,20 @@ Windows平台:
 
 ![](../images/encrypt.png)
 
+目前，还添加了一个key参数，可指定密钥进行加密。用法如下：
+
+Linux平台:
+```
+# 假设模型在/root/projects下
+./paddlex-encryption/tool/paddlex_encrypt_tool -model_dir /root/projects/paddlex_inference_model -save_dir /root/projects/paddlex_encrypted_model -key kLAl1qOs5uRbFt0/RrIDTZW2+tOf5bzvUIaHGF8lJ1c
+```
+
+Windows平台:
+```
+# 假设模型在D:/projects下
+.\paddlex-encryption\tool\paddlex_encrypt_tool.exe -model_dir D:\projects\paddlex_inference_model -save_dir D:\projects\paddlex_encrypted_model -key kLAl1qOs5uRbFt0/RrIDTZW2+tOf5bzvUIaHGF8lJ1c
+```
+
 ## 2. PaddleX C++加密部署
 
 ### 2.1 Linux平台使用
@@ -165,3 +179,17 @@ D:\projects\images\xiaoduxiongn.jpeg
 .\paddlex_inference\detector.exe --model_dir=D:\projects\paddlex_encrypted_model --image_list=D:\projects\images_list.txt --use_gpu=1 --save_dir=output --key=kLAl1qOs5uRbFt0/RrIDTZW2+tOf5bzvUIaHGF8lJ1c=
 ```
 `--key`传入加密工具输出的密钥，例如`kLAl1qOs5uRbFt0/RrIDTZW2+tOf5bzvUIaHGF8lJ1c=`, 图片文件`可视化预测结果`会保存在`save_dir`参数设置的目录下。
+
+### 2.3 Windows鉴权服务中心使用
+在编译指南的编译流程基础上，在CMake设置中勾选WITH_ENCRYPTION_SERVER（可选择勾选USE_REINFORCED，使用加固版本的鉴权sdk），ENCRYPTION_DIR填写为加密工具包解压后的目录，再进行编译。
+
+再使用鉴权服务时，先指定鉴权服务中心的ip，如：`set AIPE_SECURITY_SERVER_HOST=10.175.143.29`
+
+#### 样例：
+不使用`GPU`测试单张图片，例如图片为`D:\images\xiaoduxiong.jpeg`，加密后的模型目录为`D:\projects\paddlex_encrypted_model`
+
+```shell
+.\paddlex_inference\detector.exe --model_dir=D:\projects\paddlex_encrypted_model --image=D:\images\xiaoduxiong.jpeg --save_dir=output --key_id=pmodel_id_1
+```
+
+`--key_id`传入密钥所对应的id，例如`pmodel_idx_1`, 图片文件`可视化预测结果`会保存在`save_dir`参数设置的目录下。

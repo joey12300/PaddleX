@@ -124,6 +124,7 @@ cd D:\projects\PaddleX\deploy\cpp\out\build\x64-Release
 | batch_size | 预测的批量大小，默认为1 |
 | thread_num | 预测的线程数，默认为cpu处理器个数 |
 | use_ir_optim | 是否使用图优化策略，支持值为0或1（默认值为1，图像分割默认值为0）|
+| key_id | 密钥的id |
 
 ## 样例
 
