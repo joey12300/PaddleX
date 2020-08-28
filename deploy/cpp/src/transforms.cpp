@@ -15,7 +15,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <math.h>
+#include <cmath>
 
 #include "include/paddlex/transforms.h"
 
@@ -174,24 +174,8 @@ void Transforms::Init(const YAML::Node& transforms_node, bool to_rgb) {
 }
 
 std::shared_ptr<Transform> Transforms::CreateTransform(
-    const std::string& transform_name) {
-  if (transform_name == "Normalize") {
-    return std::make_shared<Normalize>();
-  } else if (transform_name == "ResizeByShort") {
-    return std::make_shared<ResizeByShort>();
-  } else if (transform_name == "CenterCrop") {
-    return std::make_shared<CenterCrop>();
-  } else if (transform_name == "Resize") {
-    return std::make_shared<Resize>();
-  } else if (transform_name == "Padding") {
-    return std::make_shared<Padding>();
-  } else if (transform_name == "ResizeByLong") {
-    return std::make_shared<ResizeByLong>();
-  } else {
-    std::cerr << "There's unexpected transform(name='" << transform_name
-              << "')." << std::endl;
-    exit(-1);
-  }
+    const std::string& transform_name) noexcept {
+  return TransformMap::Instance().Get(transform_name.c_str())();
 }
 
 bool Transforms::Run(cv::Mat* im, ImageBlob* data) {
@@ -224,4 +208,38 @@ bool Transforms::Run(cv::Mat* im, ImageBlob* data) {
   return true;
 }
 
+TransformMap& TransformMap::Instance() {
+  static TransformMap instance;
+  return instance;
+}
+
+bool TransformMap::Insert(const std::string& transform_name,
+                          TransformMap::transform_creator_t creator) noexcept {
+  if (Has(transform_name)) {
+    throw std::runtime_error("Transform exists, don't register repeatedly");
+  }
+  map_.insert({transform_name, creator});
+  return true;
+}
+
+bool TransformMap::Has(const std::string& transform_name) const {
+  return map_.find(transform_name) != map_.end();
+}
+
+TransformMap::transform_creator_t TransformMap::Get(
+                      const std::string& transform_name) const noexcept {
+  if (!Has(transform_name)) {
+    throw std::runtime_error("Transform doesn't exist.");
+  }
+  return map_.find(transform_name)->second;
+}
+
 }  // namespace PaddleX
+
+REGISTER_TRANSFORM(Normalize);
+REGISTER_TRANSFORM(ResizeByShort);
+REGISTER_TRANSFORM(ResizeByLong);
+REGISTER_TRANSFORM(Resize);
+REGISTER_TRANSFORM(CenterCrop);
+REGISTER_TRANSFORM(Padding);
+

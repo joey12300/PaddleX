@@ -16,6 +16,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -216,8 +217,7 @@ class Padding : public Transform {
     }
     if (item["im_padding_value"].IsDefined()) {
       im_value_ = item["im_padding_value"].as<std::vector<float>>();
-    }
-    else {
+    } else {
       im_value_ = {0, 0, 0};
     }
   }
@@ -229,6 +229,7 @@ class Padding : public Transform {
   int height_ = 0;
   std::vector<float> im_value_;
 };
+
 /*
  * @brief
  * This class is transform operations manager. It stores all neccessary
@@ -237,7 +238,7 @@ class Padding : public Transform {
 class Transforms {
  public:
   void Init(const YAML::Node& node, bool to_rgb = true);
-  std::shared_ptr<Transform> CreateTransform(const std::string& name);
+  std::shared_ptr<Transform> CreateTransform(const std::string& name) noexcept;
   bool Run(cv::Mat* im, ImageBlob* data);
 
  private:
@@ -245,4 +246,35 @@ class Transforms {
   bool to_rgb_ = true;
 };
 
+class TransformMap {
+ public:
+  using transform_creator_t = std::function<std::shared_ptr<Transform>()>;
+
+  static TransformMap& Instance();
+
+  bool Insert(const std::string& transform_name,
+              transform_creator_t creator) noexcept;
+  bool Has(const std::string& transform_name) const;
+  transform_creator_t Get(const std::string& transform_name) const noexcept;
+
+ private:
+  TransformMap() = default;
+  std::unordered_map<std::string, transform_creator_t> map_;
+};
+
+template<typename TRANSFORM_TYPE>
+struct TransformRegistrar {
+  explicit TransformRegistrar(const char* transform_name) {
+    TransformMap::Instance().Insert(transform_name,
+    []()->std::shared_ptr<TRANSFORM_TYPE>{
+      return std::make_shared<TRANSFORM_TYPE>();
+    });
+  }
+};
+
 }  // namespace PaddleX
+
+#define REGISTER_TRANSFORM(TRANSFORM_TYPE)                              \
+        static PaddleX::TransformRegistrar<PaddleX::TRANSFORM_TYPE>     \
+        TRANSFORM_TYPE##_##Registrar(#TRANSFORM_TYPE)
+
